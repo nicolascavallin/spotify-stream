@@ -13,7 +13,7 @@ import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
 } from "react-native-reanimated";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { Item } from "./types";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "./App";
@@ -22,6 +22,7 @@ import MoreIcon from "./components/icons/more";
 import BackIcon from "./components/icons/back";
 
 import { SharedElement } from "react-navigation-shared-element";
+import ImageColors from "react-native-image-colors";
 
 const { width: screenWidth } = Dimensions.get("screen");
 
@@ -30,7 +31,7 @@ const safeArea = {
   bottom: 24,
 };
 
-const coverSize = screenWidth - 32;
+const coverSize = screenWidth - 128;
 
 const styles = StyleSheet.create({
   container: {
@@ -77,8 +78,8 @@ const Playlist: FC<Props> = ({
   const coverAnimatedStyle = useAnimatedStyle(() => ({
     position: "absolute",
     top: safeArea.top,
-    left: 16,
-    right: 16,
+    left: 64,
+    right: 64,
     width: coverSize,
     height: coverSize,
     opacity: interpolate(scrollHandler.value, [200, 200, 350], [1, 1, 0]),
@@ -94,11 +95,36 @@ const Playlist: FC<Props> = ({
         translateY: -interpolate(
           scrollHandler.value,
           [-100, 0, 200, 350, 350],
-          [-50, 0, 180, 480, 480],
+          [-50, 0, 200, 520, 520],
         ),
       },
     ],
   }));
+
+  const [bgColor, setBgColor] = useState("#1A202C");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const x = await ImageColors.getColors(playlist.images[0].url, {
+          fallback: "#1A202C",
+          cache: true,
+          quality: "lowest",
+          key: playlist.id,
+        });
+
+        if (x.platform === "android") {
+          setBgColor(x.vibrant);
+        }
+
+        if (x.platform === "ios") {
+          setBgColor(x.primary);
+        }
+      } catch (e) {
+        console.log("err", e);
+      }
+    })();
+  }, []);
 
   const navigationBarAnimatedStyle = useAnimatedStyle(() => ({
     position: "absolute",
@@ -106,8 +132,7 @@ const Playlist: FC<Props> = ({
     left: 0,
     right: 0,
     height: safeArea.top + 60,
-    // backgroundColor: playlist.primary_color,
-    backgroundColor: "#1A202C",
+    backgroundColor: bgColor,
     opacity: interpolate(scrollHandler.value, [250, 340], [0, 1]),
   }));
 
@@ -254,7 +279,7 @@ const Playlist: FC<Props> = ({
           onPress={goBack}
           style={{
             flex: 1,
-            backgroundColor: "white",
+            backgroundColor: "rgba(255,255,255,0.8)",
             justifyContent: "center",
             alignItems: "center",
           }}

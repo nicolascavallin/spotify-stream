@@ -1,4 +1,7 @@
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { FlatList, Image, Text, TouchableOpacity } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "./App";
@@ -9,39 +12,57 @@ import { response } from "./server";
 type Props = StackScreenProps<RootStackParamList, "Home">;
 
 const Home: FC<Props> = ({ navigation: { navigate } }) => {
+  const { top: safeAreaTop, bottom: safeAreaBottom } = useSafeAreaInsets();
   return (
-    <SafeAreaView
+    <FlatList
       style={{
-        backgroundColor: "#111111",
         flex: 1,
-        padding: 16,
+        backgroundColor: "#111111",
       }}
-    >
-      <FlatList
-        data={response}
-        numColumns={2}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() => navigate("Playlist", { ...item })}
-          >
-            <SharedElement id={`playlist-${item.id}`}>
-              <Image
-                source={{
-                  uri: item.images[0].url,
-                }}
-                style={{
-                  width: 150,
-                  height: 150,
-                  margin: 16,
-                  borderRadius: 8,
-                }}
-              />
-            </SharedElement>
-          </TouchableOpacity>
-        )}
-      />
-    </SafeAreaView>
+      contentContainerStyle={{
+        paddingHorizontal: 8,
+        paddingTop: safeAreaTop + 16,
+        paddingBottom: safeAreaBottom,
+      }}
+      data={response}
+      numColumns={2}
+      ListHeaderComponent={() => (
+        <Text
+          numberOfLines={1}
+          style={{
+            color: "#ffffff",
+            fontSize: 28,
+            fontWeight: "600",
+            padding: 16,
+          }}
+        >
+          Your Playlists
+        </Text>
+      )}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          key={item.id}
+          onPress={() => navigate("Playlist", { ...item })}
+          style={{
+            flex: 1,
+            padding: 8,
+          }}
+        >
+          <SharedElement id={`playlist-${item.id}`}>
+            <Image
+              source={{
+                uri: item.images[0].url,
+              }}
+              style={{
+                flex: 1,
+                aspectRatio: 1,
+                borderRadius: 8,
+              }}
+            />
+          </SharedElement>
+        </TouchableOpacity>
+      )}
+    />
   );
 };
 
